@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "pkg-with-dot.in-the-name": "./pkg-with-dot.in-the-name.js"
+  }
+}

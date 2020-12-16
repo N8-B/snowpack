@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "mock-pkg-install-assets/json.json": "./mock-pkg-install-assets/json.json"
+  }
+}

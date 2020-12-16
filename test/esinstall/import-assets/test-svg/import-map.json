@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "mock-pkg-install-assets/svg.svg": "./mock-pkg-install-assets/svg.svg"
+  }
+}

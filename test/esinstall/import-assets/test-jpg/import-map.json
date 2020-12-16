@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "mock-pkg-install-assets/jpg.jpg": "./mock-pkg-install-assets/jpg.jpg"
+  }
+}

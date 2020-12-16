@@ -1,0 +1,5 @@
+{
+  "imports": {
+    "cjs-named-exports-reexported": "./cjs-named-exports-reexported.js"
+  }
+}
