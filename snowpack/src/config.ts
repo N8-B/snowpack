@@ -9,6 +9,8 @@ import {validate, ValidatorResult} from 'jsonschema';
 import os from 'os';
 import path from 'path';
 import yargs from 'yargs-parser';
+import url from 'url';
+
 import {logger} from './logger';
 import {esbuildPlugin} from './plugins/plugin-esbuild';
 import {
@@ -23,6 +25,7 @@ import {
   ProxyOptions,
   SnowpackConfig,
   SnowpackPlugin,
+  SnowpackUserConfig,
 } from './types/snowpack';
 import {
   addLeadingSlash,
@@ -36,7 +39,7 @@ const CONFIG_NAME = 'snowpack';
 const ALWAYS_EXCLUDE = ['**/node_modules/**/*', '**/web_modules/**/*', '**/.types/**/*'];
 
 // default settings
-const DEFAULT_CONFIG: Partial<SnowpackConfig> = {
+const DEFAULT_CONFIG: SnowpackUserConfig = {
   plugins: [],
   alias: {},
   scripts: {},
@@ -314,7 +317,7 @@ function loadPlugins(
       plugin.load = async (options: PluginLoadOptions) => {
         const result = await build({
           ...options,
-          contents: await readFile(options.filePath),
+          contents: await readFile(url.pathToFileURL(options.filePath)),
         }).catch((err) => {
           logger.error(
             `[${plugin.name}] There was a problem running this older plugin. Please update the plugin to the latest version.`,
@@ -594,8 +597,12 @@ function normalizeAlias(config: SnowpackConfig, cwd: string, createMountAlias: b
 }
 
 /** resolve --dest relative to cwd, etc. */
-function normalizeConfig(config: SnowpackConfig): SnowpackConfig {
+function normalizeConfig(_config: SnowpackUserConfig): SnowpackConfig {
   const cwd = process.cwd();
+  // TODO: This function is really fighting with TypeScript. Now that we have an accurate
+  // SnowpackUserConfig type, we can have this function construct a fresh config object
+  // from scratch instead of trying to modify the user's config object in-place.
+  let config: SnowpackConfig = (_config as any) as SnowpackConfig;
   config.knownEntrypoints = (config as any).install || [];
   // @ts-ignore
   if (config.devOptions.out) {
@@ -840,7 +847,7 @@ export function validatePluginLoadResult(
 }
 
 export function createConfiguration(
-  config: Partial<SnowpackConfig>,
+  config: SnowpackUserConfig,
 ): [ValidatorResult['errors'], undefined] | [null, SnowpackConfig] {
   const {errors: validationErrors} = validate(config, configSchema, {
     propertyName: CONFIG_NAME,
@@ -849,7 +856,7 @@ export function createConfiguration(
   if (validationErrors.length > 0) {
     return [validationErrors, undefined];
   }
-  const mergedConfig = merge<SnowpackConfig>([DEFAULT_CONFIG, config], {
+  const mergedConfig = merge<SnowpackUserConfig>([DEFAULT_CONFIG, config], {
     isMergeableObject: isPlainObject,
   });
   return [null, normalizeConfig(mergedConfig)];
@@ -910,11 +917,11 @@ export function loadAndValidateConfig(flags: CLIFlags, pkgManifest: any): Snowpa
   }
 
   // validate against schema; throw helpful user if invalid
-  const config: SnowpackConfig = result.config;
+  const config: SnowpackUserConfig = result.config;
   validateConfigAgainstV1(config, flags);
   const cliConfig = expandCliFlags(flags);
 
-  let extendConfig: SnowpackConfig = {} as SnowpackConfig;
+  let extendConfig: SnowpackUserConfig = {} as SnowpackUserConfig;
   if (config.extends) {
     const extendConfigLoc = config.extends.startsWith('.')
       ? path.resolve(path.dirname(result.filepath), config.extends)
@@ -949,7 +956,7 @@ export function loadAndValidateConfig(flags: CLIFlags, pkgManifest: any): Snowpa
     }
   }
   // if valid, apply config over defaults
-  const mergedConfig = merge<SnowpackConfig>(
+  const mergedConfig = merge<SnowpackUserConfig>(
     [
       pkgManifest.homepage ? {buildOptions: {baseUrl: pkgManifest.homepage}} : {},
       extendConfig,

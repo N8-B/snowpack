@@ -652,7 +652,7 @@ export async function startDevServer(commandOptions: CommandOptions): Promise<Sn
         return existingBuilderPromise;
       }
       const fileBuilderPromise = (async () => {
-        const builtFileOutput = await _buildFile(fileLoc, {
+        const builtFileOutput = await _buildFile(url.pathToFileURL(fileLoc), {
           plugins: config.plugins,
           isDev: true,
           isSSR,
@@ -942,7 +942,8 @@ export async function startDevServer(commandOptions: CommandOptions): Promise<Sn
     }
 
     // 2. Load the file from disk. We'll need it to check the cold cache or build from scratch.
-    const fileContents = await readFile(fileLoc);
+    const fileContents = await readFile(url.pathToFileURL(fileLoc));
+
     // 3. Send static files directly, since they were already build & resolved at install time.
     if (!isProxyModule && isStatic) {
       // If no resolution needed, just send the file directly.
@@ -1295,7 +1296,7 @@ export async function startDevServer(commandOptions: CommandOptions): Promise<Sn
   }
 
   // Announce server has started
-  const ips = Object.values(os.networkInterfaces())
+  const remoteIps = Object.values(os.networkInterfaces())
     .reduce((every: os.NetworkInterfaceInfo[], i) => [...every, ...(i || [])], [])
     .filter((i) => i.family === 'IPv4' && i.internal === false)
     .map((i) => i.address);
@@ -1304,7 +1305,7 @@ export async function startDevServer(commandOptions: CommandOptions): Promise<Sn
     protocol,
     hostname,
     port,
-    ips,
+    remoteIp: remoteIps[0],
     startTimeMs: Math.round(performance.now() - serverStart),
   });
 

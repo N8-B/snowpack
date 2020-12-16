@@ -61,6 +61,7 @@
           </a>
         <form class="search-form hidden-mobile" data-controller="search">
           <a href="/#api-reference" class="grid-nav-link">API Reference</a>
+          <a href="/guides" class="grid-nav-link plugin-nav-link">Guides</a>
           <a href="/plugins/" class="grid-nav-link">Plugins</a>
           <!-- <input type="text" name="search" placeholder="Search documentation..." class="search-form-input"></div> -->
         </form>
@@ -220,7 +221,6 @@
       dataLayer.push(arguments);
     }
     gtag('js', new Date());
-
-    gtag('config', 'UA-130280175-9');
+    gtag('config', 'UA-130280175-9', {page_path: location.pathname === '/' ? (location.pathname + location.hash) : (location.pathname)});
   </script>
 </html>
