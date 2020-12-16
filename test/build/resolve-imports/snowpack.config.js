@@ -10,6 +10,7 @@ module.exports = {
   mount: {
     './src': '/_dist_',
     './public': '/',
+    './shared/nested': '/vendor'
   },
   devOptions: {
     fallback: '_dist_/index.html',

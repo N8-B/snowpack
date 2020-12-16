@@ -44,6 +44,29 @@ function resolveSourceSpecifier(spec: string, stats: fs.Stats | false, config: S
   return spec;
 }
 
+function getFileStatsForImportSpec(spec: string, config: SnowpackConfig): fs.Stats | false {
+  let importStats;
+
+  for (const mountKey in config.mount) {
+    if (!Object.prototype.hasOwnProperty.call(config.mount, mountKey)) {
+      continue;
+    }
+
+    const candidate = path.resolve(
+      mountKey,
+      spec.replace(config.mount[mountKey].url, '').replace(/^[/\\]+/, ''),
+    );
+
+    importStats = getImportStats(candidate);
+
+    if (importStats) {
+      break;
+    }
+  }
+
+  return importStats || false;
+} 
+
 /**
  * Create a import resolver function, which converts any import relative to the given file at "fileLoc"
  * to a proper URL. Returns false if no matching import was found, which usually indicates a package
@@ -75,7 +98,7 @@ export function createImportResolver({
       );
     }
     if (spec.startsWith('/')) {
-      const importStats = getImportStats(path.resolve(cwd, spec.substr(1)));
+      const importStats = getFileStatsForImportSpec(spec, config);
       return resolveSourceSpecifier(spec, importStats, config);
     }
     if (spec.startsWith('./') || spec.startsWith('../')) {

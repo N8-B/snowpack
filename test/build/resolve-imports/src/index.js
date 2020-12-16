@@ -51,3 +51,9 @@ console.log(adSvg);
 import robotsTxtRef from '../public/robots.txt';
 import robotsTxtRef_ from '$public/robots.txt';
 console.log(robotsTxtRef, robotsTxtRef_);
+
+// Importing JSON files
+import srcJson from '/public.json';
+import srcJson_ from './public.json';
+import sharedJson from '/vendor/shared.json';
+console.log(srcJson, srcJson_, sharedJson);
